@@ -1,0 +1,69 @@
+import numpy as np
+import pretty_midi
+
+# Helper function to create a MIDI note
+def create_note(start, end, pitch, velocity=80):
+    note = pretty_midi.Note(velocity=velocity, pitch=pitch, start=start, end=end)
+    return note
+
+# Initialize a PrettyMIDI object
+midi = pretty_midi.PrettyMIDI()
+
+# Create the bass track
+bass_instrument = pretty_midi.Instrument(program=pretty_midi.instrument_name_to_program('Synth Bass 1'))
+bass_pattern = [36, 36, 38, 38, 40, 40, 41, 41]  # C, C, D, D, E, E, F, F (MIDI pitches)
+bass_start_times = np.arange(0, 8, 1)  # Start times for each note in seconds
+bass_duration = 0.5  # Duration of each note
+
+for pitch, start in zip(bass_pattern, bass_start_times):
+    bass_instrument.notes.append(create_note(start, start + bass_duration, pitch))
+
+midi.instruments.append(bass_instrument)
+
+# Create the pad track
+pad_instrument = pretty_midi.Instrument(program=pretty_midi.instrument_name_to_program('Pad 1 (new age)'))
+pad_chords = [[48, 52, 55], [50, 53, 57], [52, 55, 59], [53, 57, 60]]  # Cmin, Dsus2, Emin, Fmaj
+pad_start_times = np.arange(0, 8, 2)  # Start times for each chord in seconds
+pad_duration = 2  # Duration of each chord
+
+for chord, start in zip(pad_chords, pad_start_times):
+    for pitch in chord:
+        pad_instrument.notes.append(create_note(start, start + pad_duration, pitch))
+
+midi.instruments.append(pad_instrument)
+
+# Create the hi-hat track
+hihat_instrument = pretty_midi.Instrument(program=pretty_midi.instrument_name_to_program('Electric Kit'))
+hihat_pitch = 42  # Closed Hi-Hat MIDI pitch
+hihat_pattern = np.arange(0, 8, 0.5)  # Hi-Hats every half second
+
+for start in hihat_pattern:
+    hihat_instrument.notes.append(create_note(start, start + 0.1, hihat_pitch, velocity=60))
+
+midi.instruments.append(hihat_instrument)
+
+# Create binaural beats (not supported directly, so we use two tracks panned left and right)
+left_beat_instrument = pretty_midi.Instrument(program=pretty_midi.instrument_name_to_program('Electric Piano 1'))
+right_beat_instrument = pretty_midi.Instrument(program=pretty_midi.instrument_name_to_program('Electric Piano 1'))
+
+# Frequencies for binaural beats
+left_pitch = 60  # C4 (middle C)
+right_pitch = 61  # C#4 (difference of 1 semitone for illustration; actual would be more subtle)
+
+# Duration and start times
+beat_start_times = np.arange(0, 8, 1)  # Every second
+beat_duration = 0.5  # Duration of each beat
+
+for start in beat_start_times:
+    left_beat_instrument.notes.append(create_note(start, start + beat_duration, left_pitch, velocity=40))
+    right_beat_instrument.notes.append(create_note(start, start + beat_duration, right_pitch, velocity=40))
+
+midi.instruments.append(left_beat_instrument)
+midi.instruments.append(right_beat_instrument)
+
+# Save the MIDI file
+midi_file_path = "hypnotic_track_example.mid"
+midi.write(midi_file_path)
+
+print(f"MIDI file saved to: {midi_file_path}")
+pip install pretty_midi
